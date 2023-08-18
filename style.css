@@ -6,7 +6,7 @@ body {
 
 #game {
     background-color: gainsboro;
-    border: 3px solid black;
+    border: 3px solid grey;
     border-radius: 10px;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
