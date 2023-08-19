@@ -141,7 +141,7 @@ window.onload = function() {
         if ((ballY - ballSize <= topPaddleY) && (ballY + ballSize >= topPaddleY)) {
             if ((ballX >= centerX - paddleWidth/2) && 
                 (ballX <= centerX + paddleWidth/2)){
-                vY *= -1.1;
+                vY *= -1.01;
                 vX *= 1.01;
             }
         }
@@ -149,7 +149,7 @@ window.onload = function() {
         if ((ballY + ballSize >= bottomPaddleY) && (ballY - ballSize <= bottomPaddleY)) {
             if ((ballX >= centerX - paddleWidth/2 + playerOffset) && 
                 (ballX <= centerX + paddleWidth/2 + playerOffset)) {
-                vY *= -1.1;
+                vY *= -1.01;
                 vX *= 1.01;
             }
         }
@@ -160,12 +160,11 @@ window.onload = function() {
         const paddleSpeed = 1.5;
         if (paddleKeyLeft) {
             playerOffset -= paddleSpeed * deltaTime;
-            playerOffset = Math.max(playerOffset, -(canvasWidth / 2) + vWallWidth + paddleWidth/2);
+            playerOffset = Math.max(playerOffset, -(canvasWidth/2) + vWallWidth + paddleWidth/2);
         }
         else if (paddleKeyRight) {
             playerOffset += paddleSpeed * deltaTime;
-            // Ensure the right paddle doesn't go outside the right wall
-            playerOffset = Math.min(playerOffset, (canvasWidth / 2) - vWallWidth - paddleWidth/2);
+            playerOffset = Math.min(playerOffset, (canvasWidth/2) - vWallWidth - paddleWidth/2);
         }
         return playerOffset;
     }
