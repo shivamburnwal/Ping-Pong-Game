@@ -11,12 +11,11 @@ window.onload = function() {
     let ctx = canvas.getContext("2d");
 
     // Variables for game logic.
-    let paddleKeyLeft = false, paddleKeyRight = false;
     const canvasHeight = canvas.height;
     const canvasWidth = canvas.width;
 
     // Ball Variables
-    const ballSize = 12;
+    const ballRadius = 12;
     let ballX = canvasWidth/2;
     let ballY = canvasHeight/2;
     let vX = (Math.random() < 0.5 ? -1 : 1) * (Math.random() + 1);
@@ -26,10 +25,15 @@ window.onload = function() {
     const vWallWidth = 7;
     const hWallHeight = 7;
     const centerX = canvasWidth/2;
-    const gap = 60;
+    const gap = 50;
 
     // Paddle variables
-    const paddleWidth = 80, paddleHeight = 20, paddleDistance = 40;
+    let keyLeft = false, keyRight = false;
+    const paddleSpeed = 1.5;
+    const paddleRadius = 20;
+    const paddleWidth = 2*paddleRadius, paddleHeight = 20, paddleDistance = 40;
+    let topPaddleX = canvasWidth/2, topPaddleY = paddleDistance;
+    let bottomPaddleX = canvasWidth/2, bottomPaddleY = canvasHeight - paddleHeight - paddleDistance;
 
     let playerOffset = 0;
     let previousTimestamp = 0;
@@ -40,23 +44,21 @@ window.onload = function() {
 
     function handleKeyDown(/** @type {KeyboardEvent} */ event) {
         if (event.key === "ArrowLeft") {
-            console.log("left pressed");
-            paddleKeyLeft = true;
+            keyLeft = true;
         }
         else if (event.key === "ArrowRight") {
-            console.log("right pressed");
-            paddleKeyRight = true;
+            keyRight = true;
         }
     }
 
     function handleKeyUp(/** @type {KeyboardEvent} */ event) {
         if (event.key === "ArrowLeft") {
-            console.log("left unpressed");
-            paddleKeyLeft = false;
+            keyLeft = false;
+            playerOffset = 0;
         }
         else if (event.key === "ArrowRight") {
-            console.log("right unpressed");
-            paddleKeyRight = false;
+            keyRight = false;
+            playerOffset = 0;
         }
     }
     //#endregion
@@ -79,92 +81,87 @@ window.onload = function() {
 
     // drawPaddles
     function drawPaddles(playerOffset) {
-        const gradientPaddleTop = ctx.createLinearGradient(
-            canvasWidth / 2 - paddleWidth / 2 + playerOffset, paddleDistance,
-            canvasWidth / 2 - paddleWidth / 2 + playerOffset, paddleDistance + paddleHeight
-        );
-        gradientPaddleTop.addColorStop(0, "rgba(0, 0, 255, 0)"); // Almost transparent blue at the top
-        gradientPaddleTop.addColorStop(0.3, "rgba(0, 0, 255, 0.6)");    
-        gradientPaddleTop.addColorStop(0.5, "rgba(0, 0, 255, 1)");    
-        gradientPaddleTop.addColorStop(0.7, "rgba(0, 0, 255, 0)");    
-        gradientPaddleTop.addColorStop(1, "rgba(0, 0, 255, 0)"); // Fully opaque blue at the bottom    
-
-        ctx.fillStyle = gradientPaddleTop;
+        ctx.fillStyle = "blue";
         ctx.beginPath();
-        ctx.roundRect(canvasWidth/2 - paddleWidth/2, paddleDistance, paddleWidth, paddleHeight, 5);
+        ctx.arc(topPaddleX, topPaddleY, paddleRadius, 0, Math.PI*2);
         ctx.fill();
-
-        const gradientPaddleBottom = ctx.createLinearGradient(
-            canvasWidth / 2 - paddleWidth / 2 + playerOffset, canvasHeight - paddleDistance - paddleHeight,
-            canvasWidth / 2 - paddleWidth / 2 + playerOffset, canvasHeight - paddleDistance
-        );
-        gradientPaddleBottom.addColorStop(0, "rgba(0, 0, 255, 0)"); // Almost transparent blue at the top
-        gradientPaddleBottom.addColorStop(0.3, "rgba(0, 0, 255, 0)");    
-        gradientPaddleBottom.addColorStop(0.5, "rgba(0, 0, 255, 1)");    
-        gradientPaddleBottom.addColorStop(0.7, "rgba(0, 0, 255, 0.6)");    
-        gradientPaddleBottom.addColorStop(1, "rgba(0, 0, 255, 0)"); // Fully opaque blue at the bottom
     
-        ctx.fillStyle = gradientPaddleBottom;
+        ctx.fillStyle = "blue";
         ctx.beginPath();
-        ctx.roundRect(canvasWidth/2 - paddleWidth/2 + playerOffset, canvasHeight - paddleHeight - paddleDistance, paddleWidth, paddleHeight, 5);
+        bottomPaddleX += playerOffset
+        ctx.arc(bottomPaddleX, bottomPaddleY, paddleRadius, 0, Math.PI*2);
         ctx.fill();
     }
 
     // drawBall
     function drawBall(x, y) {
         ctx.beginPath();
-        ctx.arc(x, y, ballSize, 0, Math.PI * 2);
+        ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
         ctx.fillStyle = "black";
         ctx.fill();
         ctx.closePath();
     }
     //#endregion
 
+    function distance(pointA, pointB) {
+        return Math.sqrt( (pointA.x - pointB.x)**2 + (pointA.y - pointB.y)**2 );
+    }
+
     // Get ball position.
     function getBallPosition(deltaTime) {
-        ballX += vX * deltaTime;
-        ballY += vY * deltaTime;
-        if ((ballX < (ballSize + vWallWidth)) || (ballX > (canvasWidth - ballSize - vWallWidth))) {
+        let topPaddleCenter = { x:topPaddleX, y:topPaddleY };
+        let bottomPaddleCenter = { x:bottomPaddleX, y:bottomPaddleY };
+        let ballCenter = { x:ballX, y:ballY };
+
+        if ((ballX <= (ballRadius + vWallWidth)) || (ballX >= (canvasWidth - ballRadius - vWallWidth))) {
             vX = -vX;
         }
-        if ((ballY < (ballSize + hWallHeight)) || (ballY > (canvasHeight - ballSize - hWallHeight))) {
+        if ((ballY <= (ballRadius + hWallHeight)) || (ballY >= (canvasHeight - ballRadius - hWallHeight))) {
             vY = -vY;
         }
-        return {ballX, ballY}
+
+        if (distance(topPaddleCenter, ballCenter) <= ballRadius + paddleRadius) {
+            handleCollison(topPaddleCenter, ballCenter);
+            vX *= 1.01;
+            vY *= 1.01;
+        }
+
+        if (distance(bottomPaddleCenter, ballCenter) <= ballRadius + paddleRadius) {
+            handleCollison(bottomPaddleCenter, ballCenter);
+            vX *= 1.01;
+            vY *= 1.01;
+        }
+
+        ballX += vX * deltaTime;
+        ballY += vY * deltaTime;
+
+        return {ballX, ballY};
     }
 
     // Handle ball collisons with paddles.
-    function handleCollisons(ballX, ballY, playerOffset) {
-        let topPaddleY = paddleDistance + paddleHeight/2;
-        let bottomPaddleY = canvasHeight - paddleHeight/2 - paddleDistance;
-        // Top Paddle Collision
-        if ((ballY - ballSize <= topPaddleY) && (ballY + ballSize >= topPaddleY)) {
-            if ((ballX >= centerX - paddleWidth/2) && 
-                (ballX <= centerX + paddleWidth/2)){
-                vY *= -1.01;
-                vX *= 1.01;
-            }
-        }
-        // Bottom Paddle Collision
-        if ((ballY + ballSize >= bottomPaddleY) && (ballY - ballSize <= bottomPaddleY)) {
-            if ((ballX >= centerX - paddleWidth/2 + playerOffset) && 
-                (ballX <= centerX + paddleWidth/2 + playerOffset)) {
-                vY *= -1.01;
-                vX *= 1.01;
-            }
-        }
+    function handleCollison(paddle, ball) {
+        const collisonVector = { x: ball.x - paddle.x, y: ball.y - paddle.y };
+
+        const dis = distance(paddle, ball);
+        
+        const normalVector = { x: collisonVector.x/dis, y: collisonVector.y/dis };
+
+        const dotProduct = vX * normalVector.x + vY * normalVector.y;
+
+        // Update velocities.
+        vX -= 2 * dotProduct * normalVector.x;
+        vY -= 2 * dotProduct * normalVector.y;
     }
 
     // updateDirection : function to update ball direction
     function updateGame(playerOffset, deltaTime) {
-        const paddleSpeed = 1.5;
-        if (paddleKeyLeft) {
-            playerOffset -= paddleSpeed * deltaTime;
-            playerOffset = Math.max(playerOffset, -(canvasWidth/2) + vWallWidth + paddleWidth/2);
+        if (keyLeft) {
+            playerOffset = -1*paddleSpeed*deltaTime;
+            playerOffset = Math.max(playerOffset, -paddleRadius + vWallWidth);
         }
-        else if (paddleKeyRight) {
-            playerOffset += paddleSpeed * deltaTime;
-            playerOffset = Math.min(playerOffset, (canvasWidth/2) - vWallWidth - paddleWidth/2);
+        else if (keyRight) {
+            playerOffset = paddleSpeed*deltaTime;
+            playerOffset = Math.min(playerOffset, paddleRadius - vWallWidth);
         }
         return playerOffset;
     }
@@ -175,17 +172,16 @@ window.onload = function() {
         previousTimestamp = timestamp;
 
         playerOffset = updateGame(playerOffset, deltaTime);
-        // console.log(playerOffset);
+        console.log(playerOffset);
+
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
         ctx.imageSmoothingEnabled = true;
 
         drawWalls();
         drawPaddles(playerOffset);
 
-        var {ballX, ballY} = getBallPosition(deltaTime);
+        let {ballX, ballY} = getBallPosition(deltaTime);
         drawBall(ballX, ballY);
-
-        handleCollisons(ballX, ballY, playerOffset);
 
         requestAnimationFrame(startGame);
     }
