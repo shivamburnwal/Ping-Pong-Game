@@ -54,11 +54,9 @@ window.onload = function() {
     function handleKeyUp(/** @type {KeyboardEvent} */ event) {
         if (event.key === "ArrowLeft") {
             keyLeft = false;
-            playerOffset = 0;
         }
         else if (event.key === "ArrowRight") {
             keyRight = false;
-            playerOffset = 0;
         }
     }
     //#endregion
@@ -88,7 +86,7 @@ window.onload = function() {
     
         ctx.fillStyle = "blue";
         ctx.beginPath();
-        bottomPaddleX += playerOffset
+        bottomPaddleX = canvasWidth/2 + playerOffset;
         ctx.arc(bottomPaddleX, bottomPaddleY, paddleRadius, 0, Math.PI*2);
         ctx.fill();
     }
@@ -156,12 +154,12 @@ window.onload = function() {
     // updateDirection : function to update ball direction
     function updateGame(playerOffset, deltaTime) {
         if (keyLeft) {
-            playerOffset = -1*paddleSpeed*deltaTime;
-            playerOffset = Math.max(playerOffset, -paddleRadius + vWallWidth);
+            playerOffset -= paddleSpeed*deltaTime;
+            playerOffset = Math.max(playerOffset, -canvasWidth/2 + paddleRadius + vWallWidth);
         }
         else if (keyRight) {
-            playerOffset = paddleSpeed*deltaTime;
-            playerOffset = Math.min(playerOffset, paddleRadius - vWallWidth);
+            playerOffset += paddleSpeed*deltaTime;
+            playerOffset = Math.min(playerOffset, canvasWidth/2 - paddleRadius - vWallWidth);
         }
         return playerOffset;
     }
