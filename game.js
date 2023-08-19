@@ -13,6 +13,13 @@ window.onload = function() {
     // Variables for game logic.
     const canvasHeight = canvas.height;
     const canvasWidth = canvas.width;
+    const winThreshold = 3;
+    const speedMultiplier = 1.02;
+    const maxSpeed = 5;
+
+    let playerOffset = 0;
+    let previousTimestamp = 0;
+    let collisonHandled = false;
 
     // Ball Variables
     const ballRadius = 12;
@@ -29,14 +36,11 @@ window.onload = function() {
 
     // Paddle variables
     let keyLeft = false, keyRight = false;
-    const paddleSpeed = 1.5;
+    const paddleSpeed = 5;
     const paddleRadius = 20;
     const paddleWidth = 2*paddleRadius, paddleHeight = 20, paddleDistance = 40;
     let topPaddleX = canvasWidth/2, topPaddleY = paddleDistance;
     let bottomPaddleX = canvasWidth/2, bottomPaddleY = canvasHeight - paddleHeight - paddleDistance;
-
-    let playerOffset = 0;
-    let previousTimestamp = 0;
 
     //#region Event Listeners...
     document.addEventListener("keydown", handleKeyDown);
@@ -111,44 +115,52 @@ window.onload = function() {
         let bottomPaddleCenter = { x:bottomPaddleX, y:bottomPaddleY };
         let ballCenter = { x:ballX, y:ballY };
 
+        // Check anybody won?
+        if ((ballX > centerX - gap) && (ballX < centerX + gap)) {
+            if (Math.abs(ballY - ballRadius) <= winThreshold) {
+                console.log("You Won. Hurray...");
+            }
+            else if (Math.abs(ballY - (canvasHeight - ballRadius)) <= winThreshold) {
+                console.log("You Lost! Try Again.");
+            }
+        }
+
         if ((ballX <= (ballRadius + vWallWidth)) || (ballX >= (canvasWidth - ballRadius - vWallWidth))) {
             vX = -vX;
         }
         if ((ballY <= (ballRadius + hWallHeight)) || (ballY >= (canvasHeight - ballRadius - hWallHeight))) {
             vY = -vY;
         }
-
         if (distance(topPaddleCenter, ballCenter) <= ballRadius + paddleRadius) {
-            handleCollison(topPaddleCenter, ballCenter);
-            vX *= 1.01;
-            vY *= 1.01;
+            if (!collisonHandled) { handleCollison(topPaddleCenter, ballCenter); }
         }
-
         if (distance(bottomPaddleCenter, ballCenter) <= ballRadius + paddleRadius) {
-            handleCollison(bottomPaddleCenter, ballCenter);
-            vX *= 1.01;
-            vY *= 1.01;
+            if (!collisonHandled) { handleCollison(bottomPaddleCenter, ballCenter); }
         }
 
         ballX += vX * deltaTime;
         ballY += vY * deltaTime;
-
         return {ballX, ballY};
     }
 
     // Handle ball collisons with paddles.
     function handleCollison(paddle, ball) {
         const collisonVector = { x: ball.x - paddle.x, y: ball.y - paddle.y };
-
         const dis = distance(paddle, ball);
-        
         const normalVector = { x: collisonVector.x/dis, y: collisonVector.y/dis };
-
         const dotProduct = vX * normalVector.x + vY * normalVector.y;
+
+        collisonHandled = true;
 
         // Update velocities.
         vX -= 2 * dotProduct * normalVector.x;
         vY -= 2 * dotProduct * normalVector.y;
+
+        // Increase speed after each collision.
+        vX = Math.min(vX*speedMultiplier, maxSpeed);
+        vY = Math.min(vY*speedMultiplier, maxSpeed);
+
+        console.log(vX, vY);
     }
 
     // updateDirection : function to update ball direction
@@ -170,7 +182,7 @@ window.onload = function() {
         previousTimestamp = timestamp;
 
         playerOffset = updateGame(playerOffset, deltaTime);
-        console.log(playerOffset);
+        // console.log(playerOffset);
 
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
         ctx.imageSmoothingEnabled = true;
@@ -181,6 +193,7 @@ window.onload = function() {
         let {ballX, ballY} = getBallPosition(deltaTime);
         drawBall(ballX, ballY);
 
+        collisonHandled = false;
         requestAnimationFrame(startGame);
     }
 
