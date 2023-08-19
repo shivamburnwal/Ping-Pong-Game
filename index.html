@@ -10,7 +10,61 @@
 
 <body>
     <div class="container" id="container">
-        <h2>Ping Pong</h2>
+        <h1>Ping Pong</h1>
+
+        <div class="color-selection">
+            <div class="color-selection-item">
+                <div class="label-container">
+                    <label for="wallColor">Wall</label>
+                </div>
+                <div class="dropdown-container">
+                    <select id="wallColor">
+                        <option value="blue">Blue</option>
+                        <option value="purple">Purple</option>
+                        <option value="pink">Pink</option>
+                        <option value="yellow">Yellow</option>
+                        <option value="green">Green</option>
+                        <option value="red" selected>Red</option>
+                        <option value="brown">Brown</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="color-selection-item">
+                <div class="label-container">
+                    <label for="paddleColor">Paddle</label>
+                </div>
+                <div class="dropdown-container">
+                    <select id="paddleColor">
+                        <option value="blue">Blue</option>
+                        <option value="purple">Purple</option>
+                        <option value="pink">Pink</option>
+                        <option value="yellow">Yellow</option>
+                        <option value="green">Green</option>
+                        <option value="red">Red</option>
+                        <option value="grey" selected>Grey</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="color-selection-item">
+                <div class="label-container">
+                    <label for="ballColor">Ball</label>
+                </div>
+                <div class="dropdown-container">
+                    <select id="ballColor">
+                        <option value="blue">Blue</option>
+                        <option value="purple">Purple</option>
+                        <option value="pink">Pink</option>
+                        <option value="yellow">Yellow</option>
+                        <option value="green" selected>Green</option>
+                        <option value="red">Red</option>
+                        <option value="grey">Grey</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <!-- canvas for game -->
         <canvas id="game" height="550px" width="400px"></canvas>
     </div>
