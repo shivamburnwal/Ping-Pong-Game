@@ -31,6 +31,8 @@ window.onload = function() {
     let playerOffset = 0;
     let previousTimestamp = 0;
     let collisonHandled = false;
+    let isFirstFrame = true;
+    let gameStarted = false;
 
     // Ball Variables
     const ballRadius = 12;
@@ -100,11 +102,13 @@ window.onload = function() {
     wallColorDropdown.addEventListener("change", () => {
         wallColorCode = wallColorDropdown.value;
         wallColorDropdown.blur();
+        updateCanvas();
     });
 
     paddleColorDropdown.addEventListener("change", () => {
         paddleColorCode = paddleColorDropdown.value;
         paddleColorDropdown.blur();
+        updateCanvas();
     });
 
     ballColorDropdown.addEventListener("change", () => {
@@ -130,7 +134,7 @@ window.onload = function() {
     });
     //#endregion
 
-    //#region draw objects
+    //#region Draw Objects
     // set colour theme for wall.
     function setWallColor() {
         switch (wallColorCode) {
@@ -326,6 +330,7 @@ window.onload = function() {
     }
     //#endregion
 
+    //#region Game Logic
     function distance(pointA, pointB) {
         return Math.sqrt( (pointA.x - pointB.x)**2 + (pointA.y - pointB.y)**2 );
     }
@@ -335,6 +340,17 @@ window.onload = function() {
         let topPaddleCenter = { x:topPaddleX, y:topPaddleY };
         let bottomPaddleCenter = { x:bottomPaddleX, y:bottomPaddleY };
         let ballCenter = { x:ballX, y:ballY };
+
+        // handle first frame interaction.
+        if (isFirstFrame) {
+            isFirstFrame = false;
+            return {ballX, ballY};
+        }
+
+        // handle first frame problems when deltatime is not existant.
+        if (deltaTime == 0 || isNaN(deltaTime)) {
+            return {ballX, ballY};
+        }
 
         // Check anybody won?
         if ((ballX > centerX - gap) && (ballX < centerX + gap)) {
@@ -354,7 +370,6 @@ window.onload = function() {
             if (!collisonHandled) { handlePaddleCollison(bottomPaddleCenter, ballCenter); }
         }
 
-        // collison with wall?
         handleWallCollison();
 
         ballX += vX * deltaTime;
@@ -424,6 +439,13 @@ window.onload = function() {
         setPaddleColor();
         setBallColor();
     }
+    //#endregion
+
+    // Initial Canvas View.
+    setGameColors();
+    drawWalls();
+    drawPaddles(playerOffset);
+    drawBall(ballX, ballY);
 
     // startGame
     function startGame(timestamp) {
@@ -453,7 +475,4 @@ window.onload = function() {
         collisonHandled = false;
         requestAnimationFrame(startGame);
     }
-
-    setGameColors();
-    requestAnimationFrame(startGame);
 }
