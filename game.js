@@ -19,10 +19,9 @@ window.onload = function() {
     // Variables for game logic.
     const canvasHeight = canvas.height;
     const canvasWidth = canvas.width;
-    const winThreshold = 3;
+    const winThreshold = 2;
     const speedMultiplier = 1.02;
     const maxSpeed = 6;
-
     let playerOffset = 0;
     let previousTimestamp = 0;
     let collisonHandled = false;
@@ -44,9 +43,9 @@ window.onload = function() {
     let keyLeft = false, keyRight = false;
     const paddleSpeed = 3;
     const paddleRadius = 20;
-    const paddleHeight = 20, paddleDistance = 40;
-    let topPaddleX = canvasWidth/2, topPaddleY = paddleHeight + paddleDistance;
-    let bottomPaddleX = canvasWidth/2, bottomPaddleY = canvasHeight - paddleHeight - paddleDistance;
+    const paddleHeight = 60;
+    let topPaddleX = canvasWidth/2, topPaddleY = paddleHeight;
+    let bottomPaddleX = canvasWidth/2, bottomPaddleY = canvasHeight - paddleHeight;
 
     // Color theme variables
     let wallColorCode = wallColorDropdown.value;
@@ -347,7 +346,7 @@ window.onload = function() {
         }
     }
 
-    // Handle ball collisons with paddles.
+    // handle ball collisons with paddles.
     function handlePaddleCollison(paddle, ball) {
         const collisonVector = { x: ball.x - paddle.x, y: ball.y - paddle.y };
         const dis = distance(paddle, ball);
