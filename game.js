@@ -5,7 +5,7 @@ window.onload = function() {
     const canvas = document.getElementById("game");
 
     /** @type {CanvasRenderingContext2D} */
-    let ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
 
     /** @type {HTMLSelectElement} */
     const wallColorDropdown = document.getElementById("wallColor");
@@ -357,9 +357,11 @@ window.onload = function() {
         // Check anybody won?
         if ((ballX > centerX - gap) && (ballX < centerX + gap)) {
             if (Math.abs(ballY - ballRadius - hWallHeight) <= winThreshold) {
+                console.log(ballY - ballRadius - hWallHeight);
                 console.log("You Won. Hurray...");
             }
             else if (Math.abs(ballY + hWallHeight + ballRadius - canvasHeight) <= winThreshold) {
+                console.log(ballY + hWallHeight + ballRadius - canvasHeight);
                 console.log("You Lost! Try Again.");
             }
         }
@@ -445,9 +447,7 @@ window.onload = function() {
 
     // Initial Canvas View.
     setGameColors();
-    drawWalls();
-    drawPaddles(playerOffset);
-    drawBall(ballX, ballY);
+    updateCanvas();
 
     // startGame
     function startGame(timestamp) {
@@ -470,7 +470,6 @@ window.onload = function() {
 
         drawWalls();
         drawPaddles(playerOffset);
-
         let {ballX, ballY} = getBallPosition(deltaTime);
         drawBall(ballX, ballY);
 
