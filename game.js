@@ -33,6 +33,7 @@ window.onload = function() {
     let collisonHandled = false;
     let isFirstFrame = true;
     let gameStarted = false;
+    let gamePaused = false;
 
     // Ball Variables
     const ballRadius = 12;
