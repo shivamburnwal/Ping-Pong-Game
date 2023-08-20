@@ -25,10 +25,6 @@ h1 {
     height: 100vh;
 }
 
-.blur {
-    filter: blur(3px);
-}
-
 .color-selection {
     display: flex;
     align-items: center;
@@ -61,19 +57,4 @@ h1 {
 .dropdown-container {
     display: flex;
     justify-content: center;
-}
-
-.game-state {
-    position: absolute;
-    top: 80vh;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: lightgreen;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 1;
 }

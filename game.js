@@ -5,7 +5,7 @@ window.onload = function() {
     const canvas = document.getElementById("game");
 
     /** @type {CanvasRenderingContext2D} */
-    const ctx = canvas.getContext("2d");
+    let ctx = canvas.getContext("2d");
 
     /** @type {HTMLSelectElement} */
     const wallColorDropdown = document.getElementById("wallColor");
@@ -16,21 +16,16 @@ window.onload = function() {
     /** @type {HTMLSelectElement} */
     const ballColorDropdown = document.getElementById("ballColor");
 
-    /** @type {HTMLButtonElement} */
-    const gameStateButton = document.getElementById("gameState");
-
     // Variables for game logic.
     const canvasHeight = canvas.height;
     const canvasWidth = canvas.width;
-    const winThreshold = 2;
+    const winThreshold = 3;
     const speedMultiplier = 1.02;
     const maxSpeed = 6;
+
     let playerOffset = 0;
     let previousTimestamp = 0;
     let collisonHandled = false;
-    let isFirstFrame = true;
-    let gameStarted = false;
-    let gamePaused = false;
 
     // Ball Variables
     const ballRadius = 12;
@@ -49,9 +44,9 @@ window.onload = function() {
     let keyLeft = false, keyRight = false;
     const paddleSpeed = 3;
     const paddleRadius = 20;
-    const paddleHeight = 60;
-    let topPaddleX = canvasWidth/2, topPaddleY = paddleHeight;
-    let bottomPaddleX = canvasWidth/2, bottomPaddleY = canvasHeight - paddleHeight;
+    const paddleHeight = 20, paddleDistance = 40;
+    let topPaddleX = canvasWidth/2, topPaddleY = paddleHeight + paddleDistance;
+    let bottomPaddleX = canvasWidth/2, bottomPaddleY = canvasHeight - paddleHeight - paddleDistance;
 
     // Color theme variables
     let wallColorCode = wallColorDropdown.value;
@@ -72,13 +67,6 @@ window.onload = function() {
         else if (event.key === "ArrowRight") {
             keyRight = true;
         }
-        else if (event.key === " ") {
-            gamePaused = !gamePaused;
-
-            if (!gamePaused && gameStarted) {
-                requestAnimationFrame(startGame);
-            }
-        }
     }
 
     function handleKeyUp(/** @type {KeyboardEvent} */ event) {
@@ -93,39 +81,20 @@ window.onload = function() {
     wallColorDropdown.addEventListener("change", () => {
         wallColorCode = wallColorDropdown.value;
         wallColorDropdown.blur();
-        updateCanvas();
     });
 
     paddleColorDropdown.addEventListener("change", () => {
         paddleColorCode = paddleColorDropdown.value;
         paddleColorDropdown.blur();
-        updateCanvas();
     });
 
     ballColorDropdown.addEventListener("change", () => {
         ballColorCode = ballColorDropdown.value;
         ballColorDropdown.blur();
-        updateCanvas();
-    });
-
-    // update the canvas for any changes
-    function updateCanvas() {
-        setGameColors();
-        drawWalls();
-        drawPaddles(playerOffset);
-        drawBall(ballX, ballY);
-    }
-
-    // handle click on start button
-    gameStateButton.addEventListener("click", () => {
-        gameStarted = true;
-        gameStateButton.style.display = "none";
-        canvas.classList.remove("blur");
-        requestAnimationFrame(startGame);
     });
     //#endregion
 
-    //#region Draw Objects
+    //#region draw objects
     // set colour theme for wall.
     function setWallColor() {
         switch (wallColorCode) {
@@ -321,7 +290,6 @@ window.onload = function() {
     }
     //#endregion
 
-    //#region Game Logic
     function distance(pointA, pointB) {
         return Math.sqrt( (pointA.x - pointB.x)**2 + (pointA.y - pointB.y)**2 );
     }
@@ -332,25 +300,12 @@ window.onload = function() {
         let bottomPaddleCenter = { x:bottomPaddleX, y:bottomPaddleY };
         let ballCenter = { x:ballX, y:ballY };
 
-        // handle first frame interaction.
-        if (isFirstFrame) {
-            isFirstFrame = false;
-            return {ballX, ballY};
-        }
-
-        // handle first frame problems when deltatime is not existant.
-        if (deltaTime == 0 || isNaN(deltaTime)) {
-            return {ballX, ballY};
-        }
-
         // Check anybody won?
         if ((ballX > centerX - gap) && (ballX < centerX + gap)) {
             if (Math.abs(ballY - ballRadius - hWallHeight) <= winThreshold) {
-                console.log(ballY - ballRadius - hWallHeight);
                 console.log("You Won. Hurray...");
             }
             else if (Math.abs(ballY + hWallHeight + ballRadius - canvasHeight) <= winThreshold) {
-                console.log(ballY + hWallHeight + ballRadius - canvasHeight);
                 console.log("You Lost! Try Again.");
             }
         }
@@ -363,6 +318,7 @@ window.onload = function() {
             if (!collisonHandled) { handlePaddleCollison(bottomPaddleCenter, ballCenter); }
         }
 
+        // collison with wall?
         handleWallCollison();
 
         ballX += vX * deltaTime;
@@ -391,7 +347,7 @@ window.onload = function() {
         }
     }
 
-    // handle ball collisons with paddles.
+    // Handle ball collisons with paddles.
     function handlePaddleCollison(paddle, ball) {
         const collisonVector = { x: ball.x - paddle.x, y: ball.y - paddle.y };
         const dis = distance(paddle, ball);
@@ -432,16 +388,9 @@ window.onload = function() {
         setPaddleColor();
         setBallColor();
     }
-    //#endregion
-
-    // Initial Canvas View.
-    setGameColors();
-    updateCanvas();
 
     // startGame
     function startGame(timestamp) {
-        if ( !gameStarted || gamePaused ) { return; }
-
         const deltaTime = (timestamp - previousTimestamp)/10;
         previousTimestamp = timestamp;
 
@@ -453,10 +402,14 @@ window.onload = function() {
 
         drawWalls();
         drawPaddles(playerOffset);
+
         let {ballX, ballY} = getBallPosition(deltaTime);
         drawBall(ballX, ballY);
 
         collisonHandled = false;
         requestAnimationFrame(startGame);
     }
+
+    setGameColors();
+    requestAnimationFrame(startGame);
 }
