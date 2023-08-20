@@ -16,6 +16,12 @@ window.onload = function() {
     /** @type {HTMLSelectElement} */
     const ballColorDropdown = document.getElementById("ballColor");
 
+    /** @type {HTMLButtonElement} */
+    const startStateButton = document.getElementById("startState");
+
+    /** @type {HTMLDivElement} */
+    const pauseStateElement = document.getElementById("pauseState");
+    
     // Variables for game logic.
     const canvasHeight = canvas.height;
     const canvasWidth = canvas.width;
@@ -67,6 +73,20 @@ window.onload = function() {
         else if (event.key === "ArrowRight") {
             keyRight = true;
         }
+        else if (event.key === " ") {
+            if (!gameStarted) { return; }
+
+            gamePaused = !gamePaused;
+            if (!gamePaused) {
+                pauseStateElement.style.display = "none";
+                canvas.classList.remove("blur-pause");
+                requestAnimationFrame(startGame);
+            }
+            else {
+                pauseStateElement.style.display = "block";
+                canvas.classList.add("blur-pause");
+            }
+        }
     }
 
     function handleKeyUp(/** @type {KeyboardEvent} */ event) {
@@ -91,6 +111,23 @@ window.onload = function() {
     ballColorDropdown.addEventListener("change", () => {
         ballColorCode = ballColorDropdown.value;
         ballColorDropdown.blur();
+        updateCanvas();
+    });
+
+    // update the canvas for any changes
+    function updateCanvas() {
+        setGameColors();
+        drawWalls();
+        drawPaddles(playerOffset);
+        drawBall(ballX, ballY);
+    }
+
+    // handle click on start button
+    startStateButton.addEventListener("click", () => {
+        gameStarted = true;
+        startStateButton.style.display = "none";
+        canvas.classList.remove("blur");
+        requestAnimationFrame(startGame);
     });
     //#endregion
 
@@ -391,6 +428,14 @@ window.onload = function() {
 
     // startGame
     function startGame(timestamp) {
+        if ( !gameStarted ) { return; }
+
+        if (gamePaused) {
+            previousTimestamp = timestamp;
+            requestAnimationFrame(startGame);
+            return;
+        }
+
         const deltaTime = (timestamp - previousTimestamp)/10;
         previousTimestamp = timestamp;
 
