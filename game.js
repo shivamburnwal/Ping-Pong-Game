@@ -18,7 +18,8 @@ window.onload = function() {
 
     /** @type {HTMLButtonElement} */
     const gameStateButton = document.getElementById("gameState");
-
+    const userScoreText = document.getElementById("user-score");
+    const computerScoreText = document.getElementById("computer-score");
     // Variables for game logic.
     const canvasHeight = canvas.height;
     const canvasWidth = canvas.width;
@@ -31,7 +32,8 @@ window.onload = function() {
     let isFirstFrame = true;
     let gameStarted = false;
     let gamePaused = false;
-
+    let userScore = 0;
+    let computerScore = 0;
     // Ball Variables
     const ballRadius = 12;
     let ballX = canvasWidth/2;
@@ -347,11 +349,24 @@ window.onload = function() {
         if ((ballX > centerX - gap) && (ballX < centerX + gap)) {
             if (Math.abs(ballY - ballRadius - hWallHeight) <= winThreshold) {
                 console.log(ballY - ballRadius - hWallHeight);
-                console.log("You Won. Hurray...");
+                userScore += 1;
+                userScoreText.innerText = userScore;
+                if(userScore>=7)
+                {
+                    alert("You Won. Hurray...");
+                    return;
+                }
+                    
             }
             else if (Math.abs(ballY + hWallHeight + ballRadius - canvasHeight) <= winThreshold) {
                 console.log(ballY + hWallHeight + ballRadius - canvasHeight);
-                console.log("You Lost! Try Again.");
+                computerScore += 1;
+                computerScoreText.innerText = computerScore;
+                if(computerScore>=7){
+                    alert("You Lost! Try Again.");
+                    return;
+                }
+                    
             }
         }
 

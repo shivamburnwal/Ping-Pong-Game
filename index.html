@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Ping Pong Game</title>
 </head>
-
 <body>
     <div class="container" id="container">
         <h1>Ping Pong</h1>
-
+        <div class="scoreboard">
+            
+            <span id="user-score">0</span>
+            -
+            <span id="computer-score">0</span>
+        </div>
         <div class="color-selection">
             <div class="color-selection-item">
                 <div class="label-container">
@@ -64,9 +67,7 @@
                 </div>
             </div>
         </div>
-
         <button id="gameState" class="game-state">Start</button>
-
         <!-- canvas for game -->
         <canvas id="game" class="blur" height="550px" width="400px"></canvas>
     </div>
