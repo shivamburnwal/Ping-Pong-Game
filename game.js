@@ -23,46 +23,31 @@ window.onload = function() {
     const pauseStateElement = document.getElementById("pauseState");
     
     // Variables for game logic.
-    const canvasHeight = canvas.height;
-    const canvasWidth = canvas.width;
-    const winThreshold = 2;
-    const speedMultiplier = 1.02;
-    const maxSpeed = 6;
-    let playerOffset = 0;
-    let previousTimestamp = 0;
-    let collisonHandled = false;
-    let isFirstFrame = true;
-    let gameStarted = false;
-    let gamePaused = false;
+    const canvasHeight = canvas.height, canvasWidth = canvas.width;
+    const winThreshold = 2, speedMultiplier = 1.02, maxSpeed = 6;
+    let playerOffset = 0, previousTimestamp = 0;
+    let collisonHandled = false, isFirstFrame = true, gameStarted = false, gamePaused = false;
 
     // Ball Variables
     const ballRadius = 12;
-    let ballX = canvasWidth/2;
-    let ballY = canvasHeight/2;
+    let ballX = canvasWidth/2, ballY = canvasHeight/2;
     let vX = (Math.random() < 0.5 ? -1 : 1) * (Math.random() + 1);
     let vY = (Math.random() < 0.5 ? -1 : 1) * (Math.random() + 1);
 
     // Wall variables
-    const vWallWidth = 10;
-    const hWallHeight = 10;
-    const centerX = canvasWidth/2;
-    const gap = 50;
+    const vWallWidth = 10, hWallHeight = 10;
+    const centerX = canvasWidth/2, gap = 50;
 
     // Paddle variables
     let keyLeft = false, keyRight = false;
-    const paddleSpeed = 3;
-    const paddleRadius = 20;
-    const paddleHeight = 60;
+    const paddleSpeed = 3, paddleRadius = 20, paddleHeight = 60;
     let topPaddleX = canvasWidth/2, topPaddleY = paddleHeight;
     let bottomPaddleX = canvasWidth/2, bottomPaddleY = canvasHeight - paddleHeight;
 
     // Color theme variables
-    let wallColorCode = wallColorDropdown.value;
-    let wallColor;
-    let paddleColorCode = paddleColorDropdown.value;
-    let outerPaddleColor, innerPaddleColor, outerHandleColor, innerHandleColor;
-    let ballColorCode = ballColorDropdown.value;
-    let innerBallColor, outerBallColor;
+    let wallColorCode = wallColorDropdown.value, wallColor;
+    let paddleColorCode = paddleColorDropdown.value, outerPaddleColor, innerPaddleColor, outerHandleColor, innerHandleColor;
+    let ballColorCode = ballColorDropdown.value, innerBallColor, outerBallColor;
 
     //#region Event Listeners...
     document.addEventListener("keydown", handleKeyDown);
