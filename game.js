@@ -20,6 +20,11 @@ window.onload = function() {
     const gameStateButton = document.getElementById("gameState");
     const userScoreText = document.getElementById("user-score");
     const computerScoreText = document.getElementById("computer-score");
+    const startStateButton = document.getElementById("startState");
+
+    /** @type {HTMLDivElement} */
+    const pauseStateElement = document.getElementById("pauseState");
+    
     // Variables for game logic.
     const canvasHeight = canvas.height;
     const canvasWidth = canvas.width;
@@ -75,10 +80,17 @@ window.onload = function() {
             keyRight = true;
         }
         else if (event.key === " ") {
-            gamePaused = !gamePaused;
+            if (!gameStarted) { return; }
 
-            if (!gamePaused && gameStarted) {
+            gamePaused = !gamePaused;
+            if (!gamePaused) {
+                pauseStateElement.style.display = "none";
+                canvas.classList.remove("blur-pause");
                 requestAnimationFrame(startGame);
+            }
+            else {
+                pauseStateElement.style.display = "block";
+                canvas.classList.add("blur-pause");
             }
         }
     }
@@ -119,9 +131,9 @@ window.onload = function() {
     }
 
     // handle click on start button
-    gameStateButton.addEventListener("click", () => {
+    startStateButton.addEventListener("click", () => {
         gameStarted = true;
-        gameStateButton.style.display = "none";
+        startStateButton.style.display = "none";
         canvas.classList.remove("blur");
         requestAnimationFrame(startGame);
     });
@@ -455,7 +467,13 @@ window.onload = function() {
 
     // startGame
     function startGame(timestamp) {
-        if ( !gameStarted || gamePaused ) { return; }
+        if ( !gameStarted ) { return; }
+
+        if (gamePaused) {
+            previousTimestamp = timestamp;
+            requestAnimationFrame(startGame);
+            return;
+        }
 
         const deltaTime = (timestamp - previousTimestamp)/10;
         previousTimestamp = timestamp;
