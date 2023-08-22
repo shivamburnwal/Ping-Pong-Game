@@ -24,8 +24,8 @@ window.onload = function() {
     
     // Variables for game logic.
     const canvasHeight = canvas.height, canvasWidth = canvas.width;
-    const winThreshold = 2, speedMultiplier = 1.02, maxSpeed = 6;
-    let playerOffset = 0, previousTimestamp = 0;
+    const winThreshold = 2, speedMultiplier = 1.02, maxSpeed = 4, saveGoalRadius = 300;
+    let playerOffset = 0, computerPlayerOffset = 0, previousTimestamp = 0;
     let collisonHandled = false, isFirstFrame = true, gameStarted = false, gamePaused = false;
 
     // Ball Variables
@@ -40,7 +40,7 @@ window.onload = function() {
 
     // Paddle variables
     let keyLeft = false, keyRight = false;
-    const paddleSpeed = 3, paddleRadius = 20, paddleHeight = 60;
+    const paddleSpeed = 3, computerPaddleSpeed = 1.2, paddleRadius = 20, paddleHeight = 70;
     let topPaddleX = canvasWidth/2, topPaddleY = paddleHeight;
     let bottomPaddleX = canvasWidth/2, bottomPaddleY = canvasHeight - paddleHeight;
 
@@ -107,7 +107,7 @@ window.onload = function() {
     function updateCanvas() {
         setGameColors();
         drawWalls();
-        drawPaddles(playerOffset);
+        drawPaddles(playerOffset, computerPlayerOffset);
         drawBall(ballX, ballY);
     }
 
@@ -215,11 +215,12 @@ window.onload = function() {
     }
 
     // drawPaddles
-    function drawPaddles(playerOffset) {
+    function drawPaddles(playerOffset, computerPlayerOffset) {
         // update color theme
         setPaddleColor();
 
         // Top paddle
+        topPaddleX = canvasWidth / 2 + computerPlayerOffset;
         const topPaddleGradient = ctx.createRadialGradient(topPaddleX, topPaddleY, paddleRadius, topPaddleX, topPaddleY, paddleRadius * 0.2);
         topPaddleGradient.addColorStop(0, outerPaddleColor);
         topPaddleGradient.addColorStop(1, innerPaddleColor);
@@ -230,13 +231,13 @@ window.onload = function() {
         ctx.fill();
 
         // Bottom paddle
+        bottomPaddleX = canvasWidth / 2 + playerOffset;
         const bottomPaddleGradient = ctx.createRadialGradient(bottomPaddleX, bottomPaddleY, paddleRadius, bottomPaddleX, bottomPaddleY, paddleRadius * 0.2);
         bottomPaddleGradient.addColorStop(0, outerPaddleColor);
         bottomPaddleGradient.addColorStop(1, innerPaddleColor);
 
         ctx.fillStyle = bottomPaddleGradient;
         ctx.beginPath();
-        bottomPaddleX = canvasWidth / 2 + playerOffset;
         ctx.arc(bottomPaddleX, bottomPaddleY, paddleRadius, 0, Math.PI * 2);
         ctx.fill();
 
@@ -341,11 +342,11 @@ window.onload = function() {
         // Check anybody won?
         if ((ballX > centerX - gap) && (ballX < centerX + gap)) {
             if (Math.abs(ballY - ballRadius - hWallHeight) <= winThreshold) {
-                console.log(ballY - ballRadius - hWallHeight);
+                // console.log(ballY - ballRadius - hWallHeight);
                 console.log("You Won. Hurray...");
             }
             else if (Math.abs(ballY + hWallHeight + ballRadius - canvasHeight) <= winThreshold) {
-                console.log(ballY + hWallHeight + ballRadius - canvasHeight);
+                // console.log(ballY + hWallHeight + ballRadius - canvasHeight);
                 console.log("You Lost! Try Again.");
             }
         }
@@ -409,7 +410,7 @@ window.onload = function() {
     }
 
     // updateDirection : function to update ball direction
-    function updateGame(playerOffset, deltaTime) {
+    function updateGame(playerOffset, computerPlayerOffset, deltaTime) {
         if (keyLeft) {
             playerOffset -= paddleSpeed*deltaTime;
             playerOffset = Math.max(playerOffset, -canvasWidth/2 + paddleRadius + vWallWidth);
@@ -418,7 +419,26 @@ window.onload = function() {
             playerOffset += paddleSpeed*deltaTime;
             playerOffset = Math.min(playerOffset, canvasWidth/2 - paddleRadius - vWallWidth);
         }
-        return playerOffset;
+
+        let computerGoalCenter = {x:canvasWidth/2, y:0};
+        let ballCenter = { x:ballX, y:ballY };
+        if (distance(computerGoalCenter, ballCenter) <= saveGoalRadius) {
+            const targetOffset = (ballX - canvasWidth/2);
+            const offsetDifference = targetOffset - computerPlayerOffset;
+            const maxOffsetChange = computerPaddleSpeed * deltaTime;
+            const offsetChange = Math.sign(offsetDifference) * Math.min(Math.abs(offsetDifference), maxOffsetChange);
+            computerPlayerOffset += offsetChange;
+        }
+        else {
+            // If ball is outside the goal radius
+            const targetOffset = 0;
+            const offsetDifference = targetOffset - computerPlayerOffset;
+            const maxOffsetChange = computerPaddleSpeed * deltaTime;
+            const offsetChange = Math.sign(offsetDifference) * Math.min(Math.abs(offsetDifference), maxOffsetChange);
+            computerPlayerOffset += offsetChange;
+        }
+        // console.log(playerOffset, computerPlayerOffset, deltaTime);
+        return { playerOffset, computerPlayerOffset };
     }
 
     // update game colors in starting
@@ -446,15 +466,15 @@ window.onload = function() {
         const deltaTime = (timestamp - previousTimestamp)/10;
         previousTimestamp = timestamp;
 
-        playerOffset = updateGame(playerOffset, deltaTime);
-        // console.log(playerOffset);
+        ({ playerOffset, computerPlayerOffset } = updateGame(playerOffset, computerPlayerOffset, deltaTime));
+        // console.log(playerOffset, computerPlayerOffset);
 
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
         ctx.imageSmoothingEnabled = true;
 
         drawWalls();
-        drawPaddles(playerOffset);
-        let {ballX, ballY} = getBallPosition(deltaTime);
+        drawPaddles(playerOffset, computerPlayerOffset);
+        ({ ballX, ballY } = getBallPosition(deltaTime));
         drawBall(ballX, ballY);
 
         collisonHandled = false;
