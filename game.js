@@ -24,7 +24,7 @@ window.onload = function() {
     
     // Variables for game logic.
     const canvasHeight = canvas.height, canvasWidth = canvas.width;
-    const winThreshold = 2, speedMultiplier = 1.02, maxSpeed = 4, saveGoalRadius = 300;
+    const winThreshold = 2, speedMultiplier = 1.002, maxSpeed = 4, saveGoalRadius = 300;
     let playerOffset = 0, computerPlayerOffset = 0, previousTimestamp = 0;
     let collisonHandled = false, isFirstFrame = true, gameStarted = false, gamePaused = false;
 
